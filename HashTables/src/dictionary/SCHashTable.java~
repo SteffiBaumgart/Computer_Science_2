@@ -1,0 +1,125 @@
+package dictionary;
+import java.util.List;
+/**
+ * Simple hash table implementation of Dictionary using Separate Chaining.
+ * 
+ * @author Stephan Jamieson 
+ * @version 24/4/2015
+ */
+public class SCHashTable extends AbstractHashTable {
+	
+	public int probes;
+	
+    private final static int DEFAULT_SIZE = 53;
+ 
+    private ChainedEntry[] table;
+	
+    public SCHashTable() { this(DEFAULT_SIZE); }
+    
+    public SCHashTable(int size) { 
+        this.table = new ChainedEntry[size];
+        this.entries = 0;
+    }
+    
+   public int findIndex(String word) {
+    	return super.hashFunction(word);
+    }
+    
+    
+    
+    @Override
+    public boolean containsWord(String word) {
+    	
+        int key = hashFunction(word);
+        
+        if (this.table[key]!= null){
+        	
+			ChainedEntry ent = this.table[key];
+			
+			while (ent != null){
+				
+				if (ent.getWord().equals(word)){
+					return true; }
+				
+				ent = ent.getNext(); }
+			
+			
+			return false; }
+		
+        //If element is null 
+        return false;
+       
+    }
+    
+    @Override
+    public List<Definition> getDefinitions(String word) {
+    	
+        int key = hashFunction(word);
+        
+        if (table[key]!=null){
+			
+			ChainedEntry entry = table[key];
+			
+			while (entry!=null){
+				
+				if (entry.getWord().equals(word)){
+					return entry.getDefinitions();
+				}
+				
+				entry = entry.getNext();
+
+			}
+			
+			return null;
+		}
+	
+			return null;
+        }		
+    
+    
+    public void insert(String word, Definition definition) {    
+    	
+        int index = hashFunction(word);
+        ChainedEntry head = table[index];
+    
+    	
+    	//add word with definition
+    	if(head == null){
+    		
+    		ChainedEntry ent = new ChainedEntry(word);
+        	ent.addDefinition(definition);
+        	this.table[index] = ent; 
+        	head.addDefinition(definition);
+        	table[index]=head;
+        	entries++; }
+    	
+
+    	else if(head!=null){
+    			
+			while (head!= null){
+				
+				if (head.getWord().equals(word)){
+					head.addDefinition(definition); }
+				
+				//end of Linked List
+				else if (head.getNext()== null){
+					ChainedEntry ent = new ChainedEntry(word);
+		        	ent.addDefinition(definition);
+		        	this.table[index] = ent; 
+		        	head.addDefinition(definition);
+		        	table[index]=head;
+		        	entries++; } 
+				  }
+			
+			head = head.getNext();
+
+           }
+	
+    	//throws exception
+    	else{ rebuild(); }	
+    	
+    }
+			
+  //deleted bottom load/probe functions
+    
+ }
