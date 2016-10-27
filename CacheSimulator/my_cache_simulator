@@ -1,0 +1,175 @@
+import sys
+import math
+import binascii
+
+L1 = {}
+L2 = {}
+
+def main():
+
+    content = []
+    lineCount = 0
+
+    f = open(sys.argv[1],"r")
+    cache = sys.argv[2]
+    blocksize = eval(sys.argv[3])
+    bytesperblock = eval(sys.argv[4])
+
+
+    for line in f:
+        #Zfill() pads string on the left with zeros to fill width.
+        lineCount+=1 #count no of addresses
+        binval = bin(int(line, 16))[2:].zfill(16) 
+        content.append(binval)
+
+
+    #Call either function depending on desired setup
+    if cache == "L1":
+        cacheOne(lineCount,content,bytesperblock,blocksize)
+
+
+    if cache == "L1L2":
+        blocksize2 =  eval(sys.argv[5])
+        bytesperblock2 =  eval(sys.argv[6])
+        cacheTwo(lineCount,content,bytesperblock,blocksize,bytesperblock2,blocksize2)
+
+
+def cacheOne(lineCount,content,bytesperblock,blocksize):
+
+    hits = 0
+    misses = 0
+    cycles = 0
+
+    offsetsize = math.log(bytesperblock, 2) #if bpb = 16 -> offset = 4
+    indexsize = math.log(blocksize, 2) #if bs = 32 -> index = 5
+    tagsum = int(offsetsize + indexsize) #then tagsum = 9
+
+
+    for address in content:
+
+        straddress = str(address)
+        a = int(16-tagsum) #-1
+        b = int(16-offsetsize) #- 1
+        index = straddress[a:b]
+        tag = straddress[:a]
+
+
+        if index in L1:
+
+            if L1[index] == tag:
+                hits += 1
+                cycles += 10
+
+
+            else:
+                misses += 1
+                L1[index] = tag
+                cycles += 1000 #main-memory fetch
+
+        else:
+            misses += 1
+            L1[index] = tag
+            cycles += 1000 #main-memory fetch
+
+    CPI = 1+((10*hits)  + (1000 * misses))/(lineCount)
+    print("L1 hits: " + str(hits))
+    print("L1 misses: " + str(misses))
+    print("Cycles: " + str(cycles))
+    print("CPI: " + str(CPI))
+
+def cacheTwo(lineCount,content,bytesperblock,blocksize,bytesperblock2,blocksize2):
+
+    hits = 0
+    misses = 0
+    hits2 = 0
+    misses2 = 0
+    cycles = 0
+   
+    offsetsize = math.log(bytesperblock, 2)
+    indexsize = math.log(blocksize, 2)
+
+    indexsize2 = math.log(blocksize2, 2)
+    offsetsize2 = math.log(bytesperblock2, 2)
+    offsetsize2 = math.log(bytesperblock2, 2)
+
+    tagsum = int(offsetsize + indexsize)
+    tagsum2 = int(offsetsize2 + indexsize2)
+
+    for address in content:
+
+        straddress = str(address)
+        a = int(16 - tagsum) #- 1
+        b = int(16 - offsetsize) #- 1
+        a2 = int(16 - tagsum2) #- 1
+        b2 = int(16 - offsetsize2) #- 1
+
+        index = straddress[a:b]
+        tag = straddress[:a]
+
+        index2 = straddress[a2:b2]
+        tag2 = straddress[:a2]
+
+        if index in L1:
+
+            if L1[index] == tag:
+                hits +=1
+                cycles += 10
+
+
+            elif index2 in L2:
+
+                misses+=1
+                L1[index] = tag
+
+                if L2[index2] == tag2:
+                    hits2 +=1
+                    cycles += 100
+
+                else:
+                    misses2 += 1
+                    L2[index2] = tag2
+                    cycles+= 1000 #main-memory fetch
+
+            else:
+                misses += 1
+                misses2 += 1
+                L1[index] = tag
+                L2[index2] = tag2
+                cycles += 1000 #main-memory fetch
+
+
+        elif index2 in L2:
+
+            misses += 1
+            L1[index] = tag
+            
+
+            if L2[index2] == tag2:
+                hits2 += 1
+                cycles += 100
+
+            else:
+                misses2 += 1
+                L2[index2] = tag2
+                cycles += 1000 #main-memory fetch
+
+        else:
+            misses += 1
+            misses2 += 1
+            L1[index] = tag
+            L2[index2] = tag2
+            cycles += 1000 #main-memory fetch
+
+
+
+	CPI = 1+((10 * hits)  + (100 * hits2)  +  (1000 * misses2))/(lineCount)
+    print("L1 hits: " + str(hits))
+    print("L1 misses: " + str(misses))
+    print("L2 hits: " + str(hits2))
+    print("L2 misses: " + str(misses2))
+    print("Cycles: " + str(cycles))
+    print("CPI: " + str(CPI))
+
+
+if __name__ == "__main__":
+    main()

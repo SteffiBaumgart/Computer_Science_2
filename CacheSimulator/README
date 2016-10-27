@@ -1,0 +1,9 @@
+
+Instructions
+1.) Locate ArchitecturePrac in terminal and cd into the directory
+2.) Type the following for L1 Cache only: python my_cache_simulator L1 <blocksize> <bytesperblock>
+Example: For L1 cache with a blocksize of 16 and 32 bytes per block
+→ python my_cache_simulator L1 16 32
+3.) Type the following for L1 Cache and L2 Cache: python my_cache_simulator L1L2 <blocksize> <bytesperblock>
+Example: For L1 Cache with a blocksize of 16 and 16 bytes per block, and a L2 Cache with a blocksize of 64 and 64 bytes per block
+→ python my_cache_simulator L1L2 16 16 64 64
